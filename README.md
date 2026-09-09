@@ -1,1 +1,1 @@
-<img src="https://static.kamekuro.ru/github.svg" />
+<img src="https://static.kamekuro.top/github.svg" />
