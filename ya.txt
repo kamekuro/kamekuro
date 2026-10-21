@@ -1,0 +1,4 @@
+--extraintf=http
+--aout=afile
+--no-audiofile-wav
+--audiofile-file=/data/user/0/org.videolan.vlc/app_vlc/.share/lua/meta/art/my.lua
