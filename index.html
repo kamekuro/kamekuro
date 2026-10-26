@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Скопировать команду</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400..900&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light dark;
+    --primary: #6750a4;
+    --on-primary: #ffffff;
+    --primary-container: #eaddff;
+    --on-primary-container: #21005d;
+    --tertiary-container: #ffd8e4;
+    --secondary-container: #e8def8;
+    --surface: #fef7ff;
+    --on-surface: #1d1b20;
+    --surface-container: #f3edf7;
+    --outline: #7a757f;
+    --spring: cubic-bezier(.34, 1.56, .64, 1);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --primary: #d0bcff;
+      --on-primary: #381e72;
+      --primary-container: #4f378b;
+      --on-primary-container: #eaddff;
+      --tertiary-container: #633b48;
+      --secondary-container: #4a4458;
+      --surface: #141218;
+      --on-surface: #e6e0e9;
+      --surface-container: #211f26;
+      --outline: #938f99;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { height: 100%; margin: 0; }
+
+  body {
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: var(--surface);
+    color: var(--on-surface);
+    font-family: "Roboto Flex", system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+
+  main {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 420px);
+    display: grid;
+    gap: 16px;
+  }
+
+  .field {
+    background: var(--surface-container);
+    border-radius: 32px 32px 32px 12px;
+    padding: 8px;
+    box-shadow: 0 1px 2px rgb(0 0 0 / .08), 0 8px 24px rgb(103 80 164 / .12);
+  }
+
+  .field output {
+    display: block;
+    background: var(--secondary-container);
+    color: var(--on-primary-container);
+    border-radius: 24px 24px 24px 6px;
+    padding: 18px clamp(16px, 4vw, 24px);
+    font-family: "Roboto Mono", ui-monospace, monospace;
+    font-weight: 500;
+    font-size: clamp(1rem, 3.6vw, 1.2rem);
+    line-height: 1.4;
+    letter-spacing: -.01em;
+    overflow-wrap: anywhere;
+    user-select: all;
+  }
+
+  .field output span { opacity: .55; }
+
+  button {
+    justify-self: end;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    height: 56px;
+    padding: 0 28px 0 20px;
+    border: 0;
+    border-radius: 28px;
+    background: var(--primary);
+    color: var(--on-primary);
+    font: 600 1.05rem/1 "Roboto Flex", system-ui, sans-serif;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: border-radius .45s var(--spring), transform .45s var(--spring), background-color .25s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button::before {
+    content: "";
+    position: absolute; inset: 0;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity .2s;
+  }
+  button:hover::before { opacity: .08; }
+  button:focus-visible { outline: 3px solid var(--on-surface); outline-offset: 4px; }
+  button:focus-visible::before { opacity: .12; }
+  button:active { border-radius: 12px; transform: scale(.96); }
+  button:active::before { opacity: .12; }
+
+  button svg { width: 24px; height: 24px; fill: currentColor; flex: none; }
+  button .ok { display: none; }
+  button.done { border-radius: 12px 28px 12px 28px; background: var(--on-primary-container); color: var(--primary-container); }
+  button.done .ok { display: block; }
+  button.done .copy { display: none; }
+
+  button:disabled { opacity: .4; cursor: not-allowed; }
+
+  @media (max-width: 480px) {
+    button { justify-self: stretch; justify-content: center; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    button, button::before { transition: none; }
+  }
+</style>
+</head>
+<body>
+  <main>
+    <div class="field">
+      <output id="text" for="copy" aria-live="polite"></output>
+    </div>
+
+    <button id="copy" type="button">
+      <svg class="copy" viewBox="0 -960 960 960" aria-hidden="true"><path d="M360-240q-33 0-56.500-23.500T280-320v-480q0-33 23.500-56.500T360-880h360q33 0 56.500 23.500T800-800v480q0 33-23.500 56.500T720-240H360Zm0-80h360v-480H360v480ZM200-80q-33 0-56.500-23.500T120-160v-560h80v560h440v80H200Zm160-240v-480 480Z"/></svg>
+      <svg class="ok" viewBox="0 -960 960 960" aria-hidden="true"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg>
+      <span id="label">Скопировать</span>
+    </button>
+  </main>
+
+  <script>
+    // Параметры ссылки (?code=...) недоступны чистому HTML/CSS, поэтому нужен этот минимум JS.
+    const code = new URLSearchParams(location.search).get('code') || '';
+    const out = document.getElementById('text');
+    const btn = document.getElementById('copy');
+    const label = document.getElementById('label');
+    const value = '.scode ' + code;
+
+    out.textContent = value;
+    if (!code) { btn.disabled = true; label.textContent = 'Нет кода в ссылке'; }
+
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(value);
+      } catch (e) {
+        const r = document.createRange(); r.selectNodeContents(out);
+        const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+        document.execCommand('copy');
+      }
+      btn.classList.add('done');
+      label.textContent = 'Скопировано';
+      setTimeout(() => { btn.classList.remove('done'); label.textContent = 'Скопировать'; }, 1800);
+    });
+  </script>
+</body>
+</html>
